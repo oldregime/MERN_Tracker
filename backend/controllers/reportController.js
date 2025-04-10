@@ -31,7 +31,7 @@ exports.getFinancialSummary = async (req, res) => {
       endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     }
 
-    // Get total expenses
+    // Get total expenses - ensure we only get data for the current user
     const expenseTotal = await Expense.aggregate([
       {
         $match: {
@@ -47,7 +47,7 @@ exports.getFinancialSummary = async (req, res) => {
       }
     ]);
 
-    // Get total income
+    // Get total income - ensure we only get data for the current user
     const incomeTotal = await Income.aggregate([
       {
         $match: {
@@ -236,11 +236,30 @@ exports.getCashFlow = async (req, res) => {
       success: true,
       data: {
         labels: months,
-        datasets: {
-          income: incomeData,
-          expenses: expenseData,
-          balance: balanceData
-        }
+        datasets: [
+          {
+            label: 'Income',
+            data: incomeData,
+            backgroundColor: 'rgba(46, 204, 113, 0.5)',
+            borderColor: 'rgb(46, 204, 113)',
+            borderWidth: 1
+          },
+          {
+            label: 'Expenses',
+            data: expenseData,
+            backgroundColor: 'rgba(231, 76, 60, 0.5)',
+            borderColor: 'rgb(231, 76, 60)',
+            borderWidth: 1
+          },
+          {
+            label: 'Balance',
+            data: balanceData,
+            backgroundColor: 'rgba(52, 152, 219, 0.5)',
+            borderColor: 'rgb(52, 152, 219)',
+            borderWidth: 1,
+            hidden: true
+          }
+        ]
       }
     });
   } catch (error) {
@@ -344,12 +363,35 @@ exports.getExpenseTrends = async (req, res) => {
       currentDate.setMonth(currentDate.getMonth() + 1);
     }
 
+    // Convert datasets object to array format for Chart.js
+    const datasetArray = categories.map((category, index) => {
+      // Generate a color based on index
+      const colors = [
+        'rgba(52, 152, 219, 0.5)', // blue
+        'rgba(46, 204, 113, 0.5)', // green
+        'rgba(231, 76, 60, 0.5)',  // red
+        'rgba(241, 196, 15, 0.5)', // yellow
+        'rgba(155, 89, 182, 0.5)', // purple
+        'rgba(26, 188, 156, 0.5)', // turquoise
+        'rgba(211, 84, 0, 0.5)',   // orange
+        'rgba(52, 73, 94, 0.5)'    // dark blue
+      ];
+
+      return {
+        label: category,
+        data: datasets[category],
+        backgroundColor: colors[index % colors.length],
+        borderColor: colors[index % colors.length].replace('0.5', '1'),
+        borderWidth: 1
+      };
+    });
+
     res.status(200).json({
       success: true,
       data: {
         labels: months,
         categories,
-        datasets
+        datasets: datasetArray
       }
     });
   } catch (error) {

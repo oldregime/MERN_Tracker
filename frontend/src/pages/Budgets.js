@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { getBudgetProgress, addBudget, deleteBudget, getCategories } from '../services/dataService';
+import { fetchBudgetProgress, createBudget, deleteBudget, getCategories } from '../services/apiService';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
 const Budgets = () => {
@@ -20,10 +20,11 @@ const Budgets = () => {
   });
 
   useEffect(() => {
-    // Fetch budgets from data service
-    const fetchData = () => {
+    // Fetch budgets from API
+    const fetchData = async () => {
       try {
-        const budgetsData = getBudgetProgress();
+        setLoading(true);
+        const budgetsData = await fetchBudgetProgress();
         const categoriesData = getCategories();
 
         // Assign colors to budgets
@@ -32,7 +33,7 @@ const Budgets = () => {
           '#1abc9c', '#d35400', '#34495e', '#16a085', '#c0392b'
         ];
 
-        const budgetsWithColors = budgetsData.map((budget, index) => ({
+        const budgetsWithColors = (budgetsData || []).map((budget, index) => ({
           ...budget,
           color: colors[index % colors.length],
           name: budget.category // Use category as name for display
@@ -288,7 +289,7 @@ const Budgets = () => {
   );
 
   // Handle adding a new budget
-  function handleAddBudget(e) {
+  async function handleAddBudget(e) {
     e.preventDefault();
 
     // Validate form
@@ -296,46 +297,54 @@ const Budgets = () => {
       return;
     }
 
-    // Add budget to storage
-    const addedBudget = addBudget({
-      ...newBudget,
-      amount: parseFloat(newBudget.amount)
-    });
+    try {
+      // Add budget via API
+      const addedBudget = await createBudget({
+        ...newBudget,
+        amount: parseFloat(newBudget.amount)
+      });
 
-    // Assign a color to the new budget
-    const colors = [
-      '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-      '#1abc9c', '#d35400', '#34495e', '#16a085', '#c0392b'
-    ];
+      // Assign a color to the new budget
+      const colors = [
+        '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
+        '#1abc9c', '#d35400', '#34495e', '#16a085', '#c0392b'
+      ];
 
-    const budgetWithColor = {
-      ...addedBudget,
-      color: colors[budgets.length % colors.length],
-      name: addedBudget.category,
-      spent: 0,
-      remaining: addedBudget.amount,
-      progress: 0
-    };
+      const budgetWithColor = {
+        ...addedBudget,
+        color: colors[budgets.length % colors.length],
+        name: addedBudget.category,
+        spent: 0,
+        remaining: addedBudget.amount,
+        progress: 0
+      };
 
-    // Update state
-    setBudgets([...budgets, budgetWithColor]);
+      // Update state
+      setBudgets([...budgets, budgetWithColor]);
 
-    // Reset form and close modal
-    setNewBudget({
-      category: '',
-      amount: '',
-      period: 'Monthly',
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
-    });
-    setShowModal(false);
+      // Reset form and close modal
+      setNewBudget({
+        category: '',
+        amount: '',
+        period: 'Monthly',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
+      });
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error adding budget:', error);
+    }
   }
 
   // Handle deleting a budget
-  function handleDeleteBudget(id) {
+  async function handleDeleteBudget(id) {
     if (window.confirm('Are you sure you want to delete this budget?')) {
-      deleteBudget(id);
-      setBudgets(budgets.filter(budget => budget.id !== id));
+      try {
+        await deleteBudget(id);
+        setBudgets(budgets.filter(budget => budget._id !== id));
+      } catch (error) {
+        console.error('Error deleting budget:', error);
+      }
     }
   }
 };

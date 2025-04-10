@@ -58,8 +58,7 @@ export const getExpensesByCategory = async () => {
 
 export const getFinancialSummary = async () => {
   try {
-    const result = await apiService.fetchFinancialSummary();
-    const summary = result.summary || {};
+    const summary = await apiService.fetchFinancialSummary();
     return {
       totalExpenses: summary.totalExpenses || 0,
       totalIncome: summary.totalIncome || 0,
@@ -80,32 +79,26 @@ export const getFinancialSummary = async () => {
 export const getMonthlyData = async () => {
   try {
     const cashFlowData = await apiService.fetchCashFlow();
-
+    
     // Extract months from labels
     const months = cashFlowData.labels || [];
-
+    
     // Extract income and expense data
     const datasets = cashFlowData.datasets || [];
-    // Ensure datasets is an array
-    const datasetsArray = Array.isArray(datasets) ? datasets : [];
-
-    const incomeDataset = datasetsArray.find(ds => ds.label === 'Income');
-    const expenseDataset = datasetsArray.find(ds => ds.label === 'Expenses');
-
-    const incomeData = incomeDataset?.data || [];
-    const expenseData = expenseDataset?.data || [];
-
+    const incomeData = datasets.find(ds => ds.label === 'Income')?.data || [];
+    const expenseData = datasets.find(ds => ds.label === 'Expenses')?.data || [];
+    
     // Format data to match the expected structure
     const monthlyExpenses = months.map((month, index) => ({
       month,
       total: expenseData[index] || 0
     }));
-
+    
     const monthlyIncome = months.map((month, index) => ({
       month,
       total: incomeData[index] || 0
     }));
-
+    
     return {
       months,
       expenses: monthlyExpenses,

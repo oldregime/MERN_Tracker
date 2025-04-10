@@ -29,12 +29,13 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Personal Finance Tracker API' });
 });
 
-// Use routes
+// Use routes - all routes are protected with authentication middleware
+// that ensures each user can only access their own data
 app.use('/api/auth', authRoutes);
-app.use('/api/expenses', expenseRoutes);
-app.use('/api/income', incomeRoutes);
-app.use('/api/budgets', budgetRoutes);
-app.use('/api/reports', reportRoutes);
+app.use('/api/expenses', expenseRoutes); // User-specific expenses
+app.use('/api/income', incomeRoutes);    // User-specific income
+app.use('/api/budgets', budgetRoutes);   // User-specific budgets
+app.use('/api/reports', reportRoutes);   // User-specific reports
 
 // Error handling middleware
 app.use((err, req, res, next) => {

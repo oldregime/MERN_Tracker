@@ -27,6 +27,8 @@ exports.protect = async (req, res, next) => {
       });
     }
 
+    // Set user ID in request object for controllers to use
+    // This ensures each user only accesses their own data
     req.user = { id: user._id };
     next();
   } catch (error) {
@@ -39,6 +41,7 @@ exports.protect = async (req, res, next) => {
 };
 
 // Middleware to restrict access to specific roles
+// This ensures proper role-based access control
 exports.restrictTo = (...roles) => {
   return async (req, res, next) => {
     try {
@@ -51,6 +54,7 @@ exports.restrictTo = (...roles) => {
         });
       }
 
+      // Check if user has the required role
       if (!roles.includes(user.role)) {
         return res.status(403).json({
           success: false,

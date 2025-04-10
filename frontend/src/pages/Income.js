@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { getIncome, addIncome, deleteIncome } from '../services/dataService';
+import { fetchIncomes, createIncome, deleteIncome, getIncomeSources } from '../services/apiService';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
 const Income = () => {
@@ -20,11 +20,12 @@ const Income = () => {
   });
 
   useEffect(() => {
-    // Fetch income data from data service
-    const fetchData = () => {
+    // Fetch income data from API
+    const fetchData = async () => {
       try {
-        const incomeData = getIncome();
-        setIncomes(incomeData);
+        setLoading(true);
+        const incomeData = await fetchIncomes();
+        setIncomes(incomeData || []);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching income data:', error);
@@ -51,8 +52,9 @@ const Income = () => {
   // Calculate total income
   const totalIncome = incomes.reduce((total, income) => total + income.amount, 0);
 
-  // Get unique sources for filter
-  const sources = ['all', ...new Set(incomes.map(income => income.source))];
+  // Get income sources for filter
+  const incomeSources = getIncomeSources();
+  const sources = ['all', ...incomeSources];
 
   if (loading) {
     return <div className="loading-spinner">Loading income data...</div>;
@@ -243,7 +245,7 @@ const Income = () => {
   );
 
   // Handle adding a new income
-  function handleAddIncome(e) {
+  async function handleAddIncome(e) {
     e.preventDefault();
 
     // Validate form
@@ -251,31 +253,39 @@ const Income = () => {
       return;
     }
 
-    // Add income to storage
-    const addedIncome = addIncome({
-      ...newIncome,
-      amount: parseFloat(newIncome.amount)
-    });
+    try {
+      // Add income via API
+      const addedIncome = await createIncome({
+        ...newIncome,
+        amount: parseFloat(newIncome.amount)
+      });
 
-    // Update state
-    setIncomes([...incomes, addedIncome]);
+      // Update state
+      setIncomes([...incomes, addedIncome]);
 
-    // Reset form and close modal
-    setNewIncome({
-      description: '',
-      amount: '',
-      source: '',
-      date: new Date().toISOString().split('T')[0],
-      taxable: true
-    });
-    setShowModal(false);
+      // Reset form and close modal
+      setNewIncome({
+        description: '',
+        amount: '',
+        source: '',
+        date: new Date().toISOString().split('T')[0],
+        taxable: true
+      });
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error adding income:', error);
+    }
   }
 
   // Handle deleting an income
-  function handleDeleteIncome(id) {
+  async function handleDeleteIncome(id) {
     if (window.confirm('Are you sure you want to delete this income record?')) {
-      deleteIncome(id);
-      setIncomes(incomes.filter(income => income.id !== id));
+      try {
+        await deleteIncome(id);
+        setIncomes(incomes.filter(income => income._id !== id));
+      } catch (error) {
+        console.error('Error deleting income:', error);
+      }
     }
   }
 };

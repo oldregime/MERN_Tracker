@@ -32,7 +32,7 @@ const UserSchema = new mongoose.Schema({
   },
   isEmailVerified: {
     type: Boolean,
-    default: false
+    default: true // Set to true for simplicity in this version
   },
   verificationToken: String,
   verificationTokenExpires: Date,
@@ -43,7 +43,7 @@ const UserSchema = new mongoose.Schema({
   lastLogin: Date,
   currency: {
     type: String,
-    default: 'USD'
+    default: 'INR'
   },
   createdAt: {
     type: Date,
@@ -62,7 +62,7 @@ UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     return next();
   }
-  
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

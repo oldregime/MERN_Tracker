@@ -6,14 +6,14 @@ const { validationResult } = require('express-validator');
 // @access  Private
 exports.getExpenses = async (req, res) => {
   try {
-    // Add query parameters for filtering
+    // Ensure we're only getting expenses for the current user
     const query = { user: req.user.id };
-    
+
     // Filter by category if provided
     if (req.query.category) {
       query.category = req.query.category;
     }
-    
+
     // Filter by date range if provided
     if (req.query.startDate && req.query.endDate) {
       query.date = {
@@ -25,21 +25,21 @@ exports.getExpenses = async (req, res) => {
     } else if (req.query.endDate) {
       query.date = { $lte: new Date(req.query.endDate) };
     }
-    
+
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
-    
+
     // Get expenses with pagination
     const expenses = await Expense.find(query)
       .sort({ date: -1 })
       .skip(skip)
       .limit(limit);
-    
+
     // Get total count for pagination
     const total = await Expense.countDocuments(query);
-    
+
     res.status(200).json({
       success: true,
       count: expenses.length,
@@ -66,14 +66,14 @@ exports.getExpenses = async (req, res) => {
 exports.getExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
-    
+
     if (!expense) {
       return res.status(404).json({
         success: false,
         message: 'Expense not found'
       });
     }
-    
+
     // Check if expense belongs to user
     if (expense.user.toString() !== req.user.id) {
       return res.status(403).json({
@@ -81,7 +81,7 @@ exports.getExpense = async (req, res) => {
         message: 'Not authorized to access this expense'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: expense
@@ -103,17 +103,17 @@ exports.createExpense = async (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
   }
-  
+
   try {
     // Create new expense with user ID
     const expense = new Expense({
       ...req.body,
       user: req.user.id
     });
-    
+
     // Save to database
     await expense.save();
-    
+
     res.status(201).json({
       success: true,
       data: expense
@@ -135,17 +135,17 @@ exports.updateExpense = async (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
   }
-  
+
   try {
     let expense = await Expense.findById(req.params.id);
-    
+
     if (!expense) {
       return res.status(404).json({
         success: false,
         message: 'Expense not found'
       });
     }
-    
+
     // Check if expense belongs to user
     if (expense.user.toString() !== req.user.id) {
       return res.status(403).json({
@@ -153,14 +153,14 @@ exports.updateExpense = async (req, res) => {
         message: 'Not authorized to update this expense'
       });
     }
-    
+
     // Update expense
     expense = await Expense.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true, runValidators: true }
     );
-    
+
     res.status(200).json({
       success: true,
       data: expense
@@ -180,14 +180,14 @@ exports.updateExpense = async (req, res) => {
 exports.deleteExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
-    
+
     if (!expense) {
       return res.status(404).json({
         success: false,
         message: 'Expense not found'
       });
     }
-    
+
     // Check if expense belongs to user
     if (expense.user.toString() !== req.user.id) {
       return res.status(403).json({
@@ -195,9 +195,9 @@ exports.deleteExpense = async (req, res) => {
         message: 'Not authorized to delete this expense'
       });
     }
-    
+
     await expense.deleteOne();
-    
+
     res.status(200).json({
       success: true,
       data: {}
@@ -222,13 +222,13 @@ exports.getExpenseStats = async (req, res) => {
       { $group: { _id: '$category', total: { $sum: '$amount' } } },
       { $sort: { total: -1 } }
     ]);
-    
+
     // Get monthly expenses
     const monthlyStats = await Expense.aggregate([
       { $match: { user: req.user.id } },
       {
         $group: {
-          _id: { 
+          _id: {
             year: { $year: '$date' },
             month: { $month: '$date' }
           },
@@ -239,13 +239,13 @@ exports.getExpenseStats = async (req, res) => {
       { $sort: { '_id.year': -1, '_id.month': -1 } },
       { $limit: 12 }
     ]);
-    
+
     // Get total expenses
     const totalExpenses = await Expense.aggregate([
       { $match: { user: req.user.id } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
-    
+
     res.status(200).json({
       success: true,
       data: {

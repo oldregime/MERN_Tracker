@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { fetchFinancialSummary, fetchExpenseStats, fetchIncomeStats, fetchCashFlow } from '../services/apiService';
 
 const Reports = () => {
   const { user } = useAuth();
@@ -15,54 +16,67 @@ const Reports = () => {
   });
 
   useEffect(() => {
-    // Simulate fetching report data from API
+    // Fetch report data from API
     const fetchReportData = async () => {
       try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+        setLoading(true);
+        let data = [];
+        const colors = [
+          '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
+          '#1abc9c', '#d35400', '#34495e', '#16a085', '#c0392b'
+        ];
 
-        // Mock data based on report type
-        let mockData = [];
-
-        if (reportType === 'expense-category') {
-          mockData = [
-            { label: 'Housing', value: 1200.00, color: '#3498db' },
-            { label: 'Food', value: 450.25, color: '#2ecc71' },
-            { label: 'Transportation', value: 200.50, color: '#e74c3c' },
-            { label: 'Utilities', value: 180.00, color: '#f39c12' },
-            { label: 'Entertainment', value: 120.99, color: '#9b59b6' },
-            { label: 'Healthcare', value: 75.00, color: '#1abc9c' },
-            { label: 'Other', value: 95.00, color: '#34495e' }
-          ];
-        } else if (reportType === 'income-source') {
-          mockData = [
-            { label: 'Salary', value: 4500.00, color: '#3498db' },
-            { label: 'Freelance', value: 750.00, color: '#2ecc71' },
-            { label: 'Investments', value: 200.00, color: '#e74c3c' },
-            { label: 'Interest', value: 50.00, color: '#f39c12' },
-            { label: 'Gifts', value: 100.00, color: '#9b59b6' }
-          ];
-        } else if (reportType === 'monthly-comparison') {
-          mockData = [
-            { month: 'Jan', income: 5200.00, expenses: 3800.00 },
-            { month: 'Feb', income: 5100.00, expenses: 3600.00 },
-            { month: 'Mar', income: 5300.00, expenses: 3900.00 },
-            { month: 'Apr', income: 5150.00, expenses: 3750.00 },
-            { month: 'May', income: 5600.00, expenses: 3200.00 },
-            { month: 'Jun', income: 5400.00, expenses: 3500.00 }
-          ];
+        // Get financial summary
+        const summaryData = await fetchFinancialSummary();
+        if (summaryData && summaryData.summary) {
+          setSummary({
+            totalIncome: summaryData.summary.totalIncome || 0,
+            totalExpenses: summaryData.summary.totalExpenses || 0,
+            balance: summaryData.summary.balance || 0,
+            savingsRate: summaryData.summary.savingsRate || 0
+          });
         }
 
-        setReportData(mockData);
+        if (reportType === 'expense-category') {
+          // Get expense stats
+          const expenseStats = await fetchExpenseStats();
+          const categories = expenseStats?.categoryStats || [];
 
-        // Set summary data
-        setSummary({
-          totalIncome: 5600.00,
-          totalExpenses: 2321.74,
-          balance: 3278.26,
-          savingsRate: 58.54
-        });
+          data = categories.map((item, index) => ({
+            label: item._id,
+            value: item.total,
+            color: colors[index % colors.length]
+          }));
+        } else if (reportType === 'income-source') {
+          // Get income stats
+          const incomeStats = await fetchIncomeStats();
+          const sources = incomeStats?.sourceStats || [];
 
+          data = sources.map((item, index) => ({
+            label: item._id,
+            value: item.total,
+            color: colors[index % colors.length]
+          }));
+        } else if (reportType === 'monthly-comparison') {
+          // Get cash flow data
+          const cashFlowData = await fetchCashFlow();
+          const months = cashFlowData.labels || [];
+          const datasets = Array.isArray(cashFlowData.datasets) ? cashFlowData.datasets : [];
+
+          const incomeDataset = datasets.find(ds => ds.label === 'Income');
+          const expenseDataset = datasets.find(ds => ds.label === 'Expenses');
+
+          const incomeData = incomeDataset?.data || [];
+          const expenseData = expenseDataset?.data || [];
+
+          data = months.map((month, index) => ({
+            month,
+            income: incomeData[index] || 0,
+            expenses: expenseData[index] || 0
+          }));
+        }
+
+        setReportData(data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching report data:', error);
@@ -75,9 +89,9 @@ const Reports = () => {
 
   // Format currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: user?.currency || 'USD'
+      currency: user?.currency || 'INR'
     }).format(amount);
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { getExpenses, addExpense, deleteExpense, getCategories } from '../services/dataService';
+import { fetchExpenses, createExpense, deleteExpense, getCategories } from '../services/apiService';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
 const Expenses = () => {
@@ -21,13 +21,14 @@ const Expenses = () => {
   });
 
   useEffect(() => {
-    // Fetch expenses from data service
-    const fetchData = () => {
+    // Fetch expenses from API
+    const fetchData = async () => {
       try {
-        const expensesData = getExpenses();
+        setLoading(true);
+        const expensesData = await fetchExpenses();
         const categoriesData = getCategories();
 
-        setExpenses(expensesData);
+        setExpenses(expensesData || []);
         setCategories(categoriesData);
         setLoading(false);
       } catch (error) {
@@ -244,7 +245,7 @@ const Expenses = () => {
   );
 
   // Handle adding a new expense
-  function handleAddExpense(e) {
+  async function handleAddExpense(e) {
     e.preventDefault();
 
     // Validate form
@@ -252,31 +253,39 @@ const Expenses = () => {
       return;
     }
 
-    // Add expense to storage
-    const addedExpense = addExpense({
-      ...newExpense,
-      amount: parseFloat(newExpense.amount)
-    });
+    try {
+      // Add expense via API
+      const addedExpense = await createExpense({
+        ...newExpense,
+        amount: parseFloat(newExpense.amount)
+      });
 
-    // Update state
-    setExpenses([...expenses, addedExpense]);
+      // Update state
+      setExpenses([...expenses, addedExpense]);
 
-    // Reset form and close modal
-    setNewExpense({
-      description: '',
-      amount: '',
-      category: '',
-      date: new Date().toISOString().split('T')[0],
-      paymentMethod: 'Credit Card'
-    });
-    setShowModal(false);
+      // Reset form and close modal
+      setNewExpense({
+        description: '',
+        amount: '',
+        category: '',
+        date: new Date().toISOString().split('T')[0],
+        paymentMethod: 'Credit Card'
+      });
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error adding expense:', error);
+    }
   }
 
   // Handle deleting an expense
-  function handleDeleteExpense(id) {
+  async function handleDeleteExpense(id) {
     if (window.confirm('Are you sure you want to delete this expense?')) {
-      deleteExpense(id);
-      setExpenses(expenses.filter(expense => expense.id !== id));
+      try {
+        await deleteExpense(id);
+        setExpenses(expenses.filter(expense => expense._id !== id));
+      } catch (error) {
+        console.error('Error deleting expense:', error);
+      }
     }
   }
 };

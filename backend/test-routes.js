@@ -50,7 +50,7 @@ app.get('/test-db', async (req, res) => {
 app.post('/test-user', async (req, res) => {
   try {
     await connectDB();
-    
+
     // Check if User model exists
     let User;
     try {
@@ -63,15 +63,15 @@ app.post('/test-user', async (req, res) => {
         password: String,
         role: { type: String, default: 'user' },
         isEmailVerified: { type: Boolean, default: true },
-        currency: { type: String, default: 'USD' },
+        currency: { type: String, default: 'INR' },
         createdAt: { type: Date, default: Date.now }
       });
-      
+
       // Add methods
       UserSchema.methods.comparePassword = async function(candidatePassword) {
         return await bcrypt.compare(candidatePassword, this.password);
       };
-      
+
       UserSchema.methods.getProfile = function() {
         return {
           id: this._id,
@@ -83,23 +83,23 @@ app.post('/test-user', async (req, res) => {
           createdAt: this.createdAt
         };
       };
-      
+
       User = mongoose.model('User', UserSchema);
     }
-    
+
     // Create a test user
     const { name, email, password } = req.body;
-    
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
-    
+
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    
+
     // Create user
     const user = new User({
       name,
@@ -109,14 +109,14 @@ app.post('/test-user', async (req, res) => {
       role: 'user',
       currency: 'USD'
     });
-    
+
     await user.save();
-    
+
     // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'your-secret-key', {
       expiresIn: '1d'
     });
-    
+
     res.status(201).json({
       success: true,
       message: 'Test user created successfully',
@@ -143,29 +143,29 @@ app.post('/test-user', async (req, res) => {
 app.post('/test-login', async (req, res) => {
   try {
     await connectDB();
-    
+
     const { email, password } = req.body;
-    
+
     // Get User model
     const User = mongoose.model('User');
-    
+
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    
+
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    
+
     // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'your-secret-key', {
       expiresIn: '1d'
     });
-    
+
     res.status(200).json({
       success: true,
       message: 'Login successful',

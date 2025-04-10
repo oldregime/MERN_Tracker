@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 // @access  Private
 exports.getBudgets = async (req, res) => {
   try {
-    // Add query parameters for filtering
+    // Ensure we're only getting budgets for the current user
     const query = { user: req.user.id };
 
     // Filter by category if provided
@@ -259,7 +259,7 @@ exports.getBudgetProgress = async (req, res) => {
     // Get current date
     const now = new Date();
 
-    // Find active budgets for the current period
+    // Find active budgets for the current period - ensure we only get data for the current user
     const budgets = await Budget.find({
       user: req.user.id,
       isActive: true,
@@ -296,6 +296,7 @@ const calculateBudgetSpent = async (budgetId, userId) => {
   try {
     const budget = await Budget.findById(budgetId);
 
+    // Ensure the budget belongs to the current user for data isolation
     if (!budget || budget.user.toString() !== userId.toString()) {
       return 0;
     }

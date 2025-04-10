@@ -32,8 +32,9 @@ exports.register = async (req, res) => {
       name,
       email,
       password, // Password will be hashed by the pre-save middleware
-      currency: 'USD',
+      currency: 'INR', // Set default currency to INR
       isEmailVerified: true // For simplicity, we're setting this to true
+      // No default data - each user starts with a blank slate
     });
 
     // Save user to database

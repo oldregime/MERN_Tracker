@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { getFinancialSummary, getExpensesByCategory, getMonthlyData, getExpenses, getIncome } from '../services/dataService';
+import { fetchFinancialSummary, fetchExpenses, fetchIncomes, fetchExpenseStats, fetchCashFlow } from '../services/apiService';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { formatCurrency, formatDate } from '../utils/formatters';
@@ -26,21 +26,34 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    const fetchDashboardData = () => {
+    const fetchDashboardData = async () => {
       try {
-        // Get financial summary
-        const summary = getFinancialSummary();
-        setStats({
-          totalIncome: summary.totalIncome,
-          totalExpenses: summary.totalExpenses,
-          balance: summary.currentBalance,
-          savingsRate: summary.savingsRate
-        });
+        setLoading(true);
+
+        // Get financial summary from API
+        const summary = await fetchFinancialSummary();
+        if (summary && summary.summary) {
+          setStats({
+            totalIncome: summary.summary.totalIncome || 0,
+            totalExpenses: summary.summary.totalExpenses || 0,
+            balance: summary.summary.balance || 0,
+            savingsRate: summary.summary.savingsRate || 0
+          });
+        } else {
+          setStats({
+            totalIncome: 0,
+            totalExpenses: 0,
+            balance: 0,
+            savingsRate: 0
+          });
+        }
 
         // Get expenses by category for pie chart
-        const expenseCategories = getExpensesByCategory();
+        const expenseStats = await fetchExpenseStats();
+        const expenseCategories = expenseStats?.categoryStats || [];
+
         const pieChartData = {
-          labels: expenseCategories.map(item => item.category),
+          labels: expenseCategories.map(item => item._id),
           datasets: [
             {
               data: expenseCategories.map(item => item.total),
@@ -55,25 +68,11 @@ const Dashboard = () => {
         };
 
         // Get monthly data for bar chart
-        const monthlyData = getMonthlyData();
+        const cashFlowData = await fetchCashFlow();
+        // Ensure datasets is an array
         const barChartData = {
-          labels: monthlyData.months,
-          datasets: [
-            {
-              label: 'Income',
-              data: monthlyData.income.map(item => item.total),
-              backgroundColor: 'rgba(46, 204, 113, 0.5)',
-              borderColor: 'rgb(46, 204, 113)',
-              borderWidth: 1
-            },
-            {
-              label: 'Expenses',
-              data: monthlyData.expenses.map(item => item.total),
-              backgroundColor: 'rgba(231, 76, 60, 0.5)',
-              borderColor: 'rgb(231, 76, 60)',
-              borderWidth: 1
-            }
-          ]
+          labels: cashFlowData.labels || [],
+          datasets: Array.isArray(cashFlowData.datasets) ? cashFlowData.datasets : []
         };
 
         setChartData({
@@ -82,8 +81,13 @@ const Dashboard = () => {
         });
 
         // Get recent transactions (combine expenses and income)
-        const expenses = getExpenses().map(expense => ({
-          id: expense.id,
+        const [expenses, incomes] = await Promise.all([
+          fetchExpenses({ limit: 10 }),
+          fetchIncomes({ limit: 10 })
+        ]);
+
+        const expenseItems = (expenses || []).map(expense => ({
+          id: expense._id,
           type: 'expense',
           category: expense.category,
           description: expense.description,
@@ -91,8 +95,8 @@ const Dashboard = () => {
           date: expense.date
         }));
 
-        const income = getIncome().map(income => ({
-          id: income.id,
+        const incomeItems = (incomes || []).map(income => ({
+          id: income._id,
           type: 'income',
           source: income.source,
           description: income.description,
@@ -101,7 +105,7 @@ const Dashboard = () => {
         }));
 
         // Combine and sort by date (most recent first)
-        const allTransactions = [...expenses, ...income].sort((a, b) =>
+        const allTransactions = [...expenseItems, ...incomeItems].sort((a, b) =>
           new Date(b.date) - new Date(a.date)
         );
 

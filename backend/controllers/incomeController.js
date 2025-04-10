@@ -6,14 +6,14 @@ const { validationResult } = require('express-validator');
 // @access  Private
 exports.getIncomes = async (req, res) => {
   try {
-    // Add query parameters for filtering
+    // Ensure we're only getting income entries for the current user
     const query = { user: req.user.id };
-    
+
     // Filter by source if provided
     if (req.query.source) {
       query.source = req.query.source;
     }
-    
+
     // Filter by date range if provided
     if (req.query.startDate && req.query.endDate) {
       query.date = {
@@ -25,21 +25,21 @@ exports.getIncomes = async (req, res) => {
     } else if (req.query.endDate) {
       query.date = { $lte: new Date(req.query.endDate) };
     }
-    
+
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
-    
+
     // Get income entries with pagination
     const incomes = await Income.find(query)
       .sort({ date: -1 })
       .skip(skip)
       .limit(limit);
-    
+
     // Get total count for pagination
     const total = await Income.countDocuments(query);
-    
+
     res.status(200).json({
       success: true,
       count: incomes.length,
@@ -66,14 +66,14 @@ exports.getIncomes = async (req, res) => {
 exports.getIncome = async (req, res) => {
   try {
     const income = await Income.findById(req.params.id);
-    
+
     if (!income) {
       return res.status(404).json({
         success: false,
         message: 'Income entry not found'
       });
     }
-    
+
     // Check if income belongs to user
     if (income.user.toString() !== req.user.id) {
       return res.status(403).json({
@@ -81,7 +81,7 @@ exports.getIncome = async (req, res) => {
         message: 'Not authorized to access this income entry'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: income
@@ -103,17 +103,17 @@ exports.createIncome = async (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
   }
-  
+
   try {
     // Create new income with user ID
     const income = new Income({
       ...req.body,
       user: req.user.id
     });
-    
+
     // Save to database
     await income.save();
-    
+
     res.status(201).json({
       success: true,
       data: income
@@ -135,17 +135,17 @@ exports.updateIncome = async (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
   }
-  
+
   try {
     let income = await Income.findById(req.params.id);
-    
+
     if (!income) {
       return res.status(404).json({
         success: false,
         message: 'Income entry not found'
       });
     }
-    
+
     // Check if income belongs to user
     if (income.user.toString() !== req.user.id) {
       return res.status(403).json({
@@ -153,14 +153,14 @@ exports.updateIncome = async (req, res) => {
         message: 'Not authorized to update this income entry'
       });
     }
-    
+
     // Update income
     income = await Income.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true, runValidators: true }
     );
-    
+
     res.status(200).json({
       success: true,
       data: income
@@ -180,14 +180,14 @@ exports.updateIncome = async (req, res) => {
 exports.deleteIncome = async (req, res) => {
   try {
     const income = await Income.findById(req.params.id);
-    
+
     if (!income) {
       return res.status(404).json({
         success: false,
         message: 'Income entry not found'
       });
     }
-    
+
     // Check if income belongs to user
     if (income.user.toString() !== req.user.id) {
       return res.status(403).json({
@@ -195,9 +195,9 @@ exports.deleteIncome = async (req, res) => {
         message: 'Not authorized to delete this income entry'
       });
     }
-    
+
     await income.deleteOne();
-    
+
     res.status(200).json({
       success: true,
       data: {}
@@ -222,13 +222,13 @@ exports.getIncomeStats = async (req, res) => {
       { $group: { _id: '$source', total: { $sum: '$amount' } } },
       { $sort: { total: -1 } }
     ]);
-    
+
     // Get monthly income
     const monthlyStats = await Income.aggregate([
       { $match: { user: req.user.id } },
       {
         $group: {
-          _id: { 
+          _id: {
             year: { $year: '$date' },
             month: { $month: '$date' }
           },
@@ -239,13 +239,13 @@ exports.getIncomeStats = async (req, res) => {
       { $sort: { '_id.year': -1, '_id.month': -1 } },
       { $limit: 12 }
     ]);
-    
+
     // Get total income
     const totalIncome = await Income.aggregate([
       { $match: { user: req.user.id } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
-    
+
     res.status(200).json({
       success: true,
       data: {
