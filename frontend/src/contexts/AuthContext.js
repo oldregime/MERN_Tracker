@@ -1,63 +1,120 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 
-// Change this line to export the context
-export const AuthContext = createContext(null);
+export const AuthContext = createContext();
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return useContext(AuthContext);
 };
 
 export const AuthProvider = ({ children }) => {
-  // Default mock user for bypassing authentication
-  const defaultUser = {
-    id: 'default-user-id',
-    name: 'Demo User',
-    email: 'demo@example.com',
-    currency: 'INR',
-    isEmailVerified: true,
-    role: 'user',
-    createdAt: new Date().toISOString()
-  };
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const [user, setUser] = useState(defaultUser);
-  const [loading, setLoading] = useState(false); // Set to false to avoid loading state
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Always authenticated
+  useEffect(() => {
+    // Check for stored token on mount
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadUser();
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
-  // Keep these functions for future use, but they won't actually change the authentication state
   const register = async (formData) => {
-    console.log('Registration bypassed:', formData);
-    return true;
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      localStorage.setItem('token', data.data.token);
+      setUser(data.data.user);
+      setIsAuthenticated(true);
+      return true;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
   };
 
-  const login = async (credentials) => {
-    console.log('Login bypassed:', credentials);
-    return true;
+  const login = async (email, password) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      localStorage.setItem('token', data.data.token);
+      setUser(data.data.user);
+      setIsAuthenticated(true);
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
-    console.log('Logout bypassed');
-    // In a real app, this would clear the user state
+    localStorage.removeItem('token');
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   const loadUser = async () => {
-    // In bypass mode, we always use the default user
-    setLoading(false);
-  };
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-  // No need to load user on mount since we're using a default user
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      setUser(data.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Load user error:', error);
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const value = {
     user,
     loading,
-    isAuthenticated, // Always true in bypass mode
+    isAuthenticated,
     register,
     login,
     logout,
@@ -66,10 +123,8 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
-
-
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
 
 // Layout Components
@@ -34,29 +34,48 @@ function App() {
 
 function AppContent() {
   const { sidebarOpen } = useSidebar();
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className={`app ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-      <Header />
+      {isAuthenticated && <Header />}
 
       <div className="main-container">
-        <Sidebar />
+        {isAuthenticated && <Sidebar />}
 
-        <main className="content">
+        <main className={`content ${!isAuthenticated ? 'auth-layout' : ''}`}>
           <Routes>
-            {/* All routes are accessible without authentication */}
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/expenses" element={<Expenses />} />
-            <Route path="/income" element={<Income />} />
-            <Route path="/budgets" element={<Budgets />} />
-            <Route path="/reports" element={<Reports />} />
+            {/* Redirect root to register if not authenticated */}
+            <Route path="/" element={
+              isAuthenticated ? <Dashboard /> : <Navigate to="/register" />
+            } />
 
-            {/* Auth pages still available but not required */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            {/* Auth routes */}
+            <Route path="/register" element={
+              !isAuthenticated ? <Register /> : <Navigate to="/" />
+            } />
+            <Route path="/login" element={
+              !isAuthenticated ? <Login /> : <Navigate to="/" />
+            } />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+            {/* Protected routes */}
+            <Route path="/profile" element={
+              isAuthenticated ? <Profile /> : <Navigate to="/login" />
+            } />
+            <Route path="/expenses" element={
+              isAuthenticated ? <Expenses /> : <Navigate to="/login" />
+            } />
+            <Route path="/income" element={
+              isAuthenticated ? <Income /> : <Navigate to="/login" />
+            } />
+            <Route path="/budgets" element={
+              isAuthenticated ? <Budgets /> : <Navigate to="/login" />
+            } />
+            <Route path="/reports" element={
+              isAuthenticated ? <Reports /> : <Navigate to="/login" />
+            } />
 
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
@@ -64,10 +83,11 @@ function AppContent() {
         </main>
       </div>
 
-      <Footer />
+      {isAuthenticated && <Footer />}
     </div>
   );
 }
 
 export default App;
+
 

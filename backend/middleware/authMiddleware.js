@@ -3,27 +3,23 @@ const User = require('../models/User');
 
 // Middleware to protect routes
 exports.protect = async (req, res, next) => {
-  let token;
-
-  // Check if token exists in headers
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  // Check if token exists
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Not authorized to access this route'
-    });
-  }
-
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let token;
 
-    // Find user by id
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized to access this route'
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const user = await User.findById(decoded.id);
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -31,11 +27,7 @@ exports.protect = async (req, res, next) => {
       });
     }
 
-    // Set user in request
-    req.user = {
-      id: user._id
-    };
-    
+    req.user = { id: user._id };
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
@@ -46,12 +38,12 @@ exports.protect = async (req, res, next) => {
   }
 };
 
-// Middleware to restrict access to admin only
+// Middleware to restrict access to specific roles
 exports.restrictTo = (...roles) => {
   return async (req, res, next) => {
     try {
       const user = await User.findById(req.user.id);
-      
+
       if (!user) {
         return res.status(401).json({
           success: false,
@@ -65,7 +57,7 @@ exports.restrictTo = (...roles) => {
           message: 'You do not have permission to perform this action'
         });
       }
-      
+
       next();
     } catch (error) {
       console.error('Restrict middleware error:', error);

@@ -35,38 +35,6 @@ router.post(
 // @access  Private
 router.get('/me', authMiddleware.protect, authController.getMe);
 
-// @route   GET /api/auth/verify-email/:token
-// @desc    Verify email address
-// @access  Public
-router.get('/verify-email/:token', authController.verifyEmail);
-
-// @route   POST /api/auth/forgot-password
-// @desc    Request password reset
-// @access  Public
-router.post(
-  '/forgot-password',
-  [
-    check('email', 'Please include a valid email').isEmail()
-  ],
-  authController.forgotPassword
-);
-
-// @route   POST /api/auth/reset-password/:token
-// @desc    Reset password
-// @access  Public
-router.post(
-  '/reset-password/:token',
-  [
-    check('password', 'Password must be at least 6 characters').isLength({ min: 6 })
-  ],
-  authController.resetPassword
-);
-
-// @route   POST /api/auth/refresh-token
-// @desc    Refresh access token
-// @access  Public
-router.post('/refresh-token', authController.refreshToken);
-
 // @route   PUT /api/auth/profile
 // @desc    Update user profile
 // @access  Private
