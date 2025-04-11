@@ -2,14 +2,20 @@
 
 A comprehensive personal finance management application built with the MERN stack (MongoDB, Express.js, React.js, Node.js) that runs entirely locally. Track expenses, manage income, set budgets, and visualize your financial progress with intuitive charts and reports.
 
+## Project Links
+
+- **Project Walkthrough Video**: [Watch here](https://drive.google.com/file/d/1Q_pht41lsXsZc63zpi4-4U522w9isAab/view?usp=sharing)
+- **Project DRIVE folder**: [Access here](https://drive.google.com/drive/folders/1X_DNZAvoWCvj6qpT__fkKYSzUobLmpXN?usp=sharing)
+- **Code Base**: [GitHub Repository](https://github.com/oldregime/MERN_Tracker)
+
 ## Features
 
-- **User Authentication**: Secure signup, login with JWT, password reset, and OAuth support (Google, Facebook)
-- **Expense Tracking**: Record, categorize, and manage your expenses
-- **Income Management**: Track income from multiple sources
-- **Budget Planning**: Set monthly budgets by category and monitor progress
-- **Visual Reports**: Analyze spending habits with interactive charts and reports
-- **Responsive Design**: Works seamlessly across devices
+- **User Authentication**: Secure signup, login with JWT, password reset, and OAuth support (Google, Facebook).
+- **Expense Tracking**: Record, categorize, and manage your expenses.
+- **Income Management**: Track income from multiple sources.
+- **Budget Planning**: Set monthly budgets by category and monitor progress.
+- **Visual Reports**: Analyze spending habits with interactive charts and reports.
+- **Responsive Design**: Works seamlessly across devices.
 
 ## Prerequisites
 
@@ -19,39 +25,6 @@ Before you begin, ensure you have the following installed:
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 - [MongoDB Community Edition](https://www.mongodb.com/try/download/community) (local installation)
 - [Visual Studio Code](https://code.visualstudio.com/) (recommended editor)
-
-### MongoDB Installation Quick Guide
-
-#### Windows:
-1. Download MongoDB Community Server from the [MongoDB Download Center](https://www.mongodb.com/try/download/community)
-2. Run the installer and follow installation wizard (Complete installation recommended)
-3. MongoDB should start automatically as a Windows service
-
-#### macOS:
-```bash
-# Using Homebrew
-brew tap mongodb/brew
-brew install mongodb-community
-brew services start mongodb-community
-```
-
-#### Linux (Ubuntu):
-```bash
-# Import MongoDB public key
-wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
-
-# Create list file for MongoDB
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
-
-# Reload package database
-sudo apt-get update
-
-# Install MongoDB
-sudo apt-get install -y mongodb-org
-
-# Start MongoDB
-sudo systemctl start mongod
-```
 
 ## Getting Started
 
@@ -203,8 +176,3 @@ personal-finance-tracker/
 ├── frontend/        # React.js frontend
 ├── .gitignore
 └── README.md
-```
-
-## License
-
-This project is licensed under the MIT License
