@@ -7,6 +7,7 @@ A comprehensive personal finance management application built with the MERN stac
 - **Project Walkthrough Video**: [Watch here](https://drive.google.com/file/d/1Q_pht41lsXsZc63zpi4-4U522w9isAab/view?usp=sharing)
 - **Project DRIVE folder**: [Access here](https://drive.google.com/drive/folders/1X_DNZAvoWCvj6qpT__fkKYSzUobLmpXN?usp=sharing)
 - **Code Base**: [GitHub Repository](https://github.com/oldregime/MERN_Tracker)
+- **Report**: [GitHub Repository](https://github.com/oldregime/MERN_Tracker/blob/main/Project%20Report.pdf)
 
 ## Features
 
