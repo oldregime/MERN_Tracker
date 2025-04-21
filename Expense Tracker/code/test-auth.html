@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .form-container {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+        .user-info {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f0f8ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+
+    <div class="container">
+        <div class="form-container">
+            <h2>Register</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Name:</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password:</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+
+        <div class="form-container">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="userInfo" class="user-info" style="display: none;">
+        <h2>Current User</h2>
+        <div id="userData"></div>
+        <button id="logoutBtn">Logout</button>
+        <button id="getProfileBtn">Get Profile</button>
+    </div>
+
+    <h3>Response:</h3>
+    <div id="response"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let token = localStorage.getItem('token');
+
+        // Check if user is logged in
+        if (token) {
+            document.getElementById('userInfo').style.display = 'block';
+            fetchUserProfile();
+        }
+
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+
+                if (response.ok && data.success) {
+                    token = data.data.token;
+                    localStorage.setItem('token', token);
+                    document.getElementById('userInfo').style.display = 'block';
+                    displayUserData(data.data.user);
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = error.message;
+            }
+        });
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+
+                if (response.ok && data.success) {
+                    token = data.data.token;
+                    localStorage.setItem('token', token);
+                    document.getElementById('userInfo').style.display = 'block';
+                    displayUserData(data.data.user);
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = error.message;
+            }
+        });
+
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            token = null;
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('userData').innerHTML = '';
+            document.getElementById('response').textContent = 'Logged out successfully';
+        });
+
+        // Get profile button
+        document.getElementById('getProfileBtn').addEventListener('click', () => {
+            fetchUserProfile();
+        });
+
+        // Fetch user profile
+        async function fetchUserProfile() {
+            try {
+                const response = await fetch(`${API_URL}/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+
+                if (response.ok && data.success) {
+                    displayUserData(data.data);
+                } else {
+                    // Token might be invalid
+                    localStorage.removeItem('token');
+                    token = null;
+                    document.getElementById('userInfo').style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = error.message;
+            }
+        }
+
+        // Display user data
+        function displayUserData(user) {
+            const userDataElement = document.getElementById('userData');
+            userDataElement.innerHTML = `
+                <p><strong>ID:</strong> ${user.id}</p>
+                <p><strong>Name:</strong> ${user.name}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Role:</strong> ${user.role}</p>
+                <p><strong>Currency:</strong> ${user.currency}</p>
+                <p><strong>Email Verified:</strong> ${user.isEmailVerified ? 'Yes' : 'No'}</p>
+                <p><strong>Created At:</strong> ${new Date(user.createdAt).toLocaleString()}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
