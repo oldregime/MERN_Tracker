@@ -12,11 +12,11 @@ The project is organized into the following structure:
   - Other configuration files and documentation
 
 - **reports and phase files/** - Contains all project documentation and phase reports
-  - **Ideation Phase/** - Initial project ideation documents
-  - **Project Design Phase/** - Design documents and architecture
-  - **Project Planing Phase/** - Project planning documents
-  - **Requirement Analysis/** - Requirements and specifications
-  - **Prjoect Report.pdf** - Complete project report
+  - **Phase 1 - Ideation/** - Initial project ideation documents
+  - **Phase 2 - Requirement Analysis/** - Requirements and specifications
+  - **Phase 3 - Project Design/** - Design documents and architecture
+  - **Phase 4 - Project Planning/** - Project planning documents
+  - **Phase 5 - Project Report/** - Complete project report
 
 ## Getting Started
 
