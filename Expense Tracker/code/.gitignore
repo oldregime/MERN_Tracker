@@ -39,3 +39,10 @@ Thumbs.db
 
 # MongoDB data directory
 /data/db
+
+# Vercel
+.vercel
+
+# Sensitive deployment files
+vercel-env-variables.txt
+setup-env.sh
