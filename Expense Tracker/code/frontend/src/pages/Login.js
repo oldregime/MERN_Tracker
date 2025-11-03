@@ -10,7 +10,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { login } = useAuth();
+  const { login, enterDemoMode } = useAuth();
   const navigate = useNavigate();
   
   const { email, password } = formData;
@@ -53,6 +53,11 @@ const Login = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDemoMode = () => {
+    enterDemoMode();
+    navigate('/');
   };
   
   return (
@@ -103,6 +108,20 @@ const Login = () => {
           {isSubmitting ? 'Signing In...' : 'Sign In'}
         </button>
       </form>
+
+      <div className="demo-mode-section">
+        <div className="divider">
+          <span>OR</span>
+        </div>
+        <button 
+          type="button"
+          className="btn btn-outline btn-block"
+          onClick={handleDemoMode}
+        >
+          <i className="fas fa-rocket"></i> Try Demo Mode
+        </button>
+        <p className="demo-note">Experience all features without creating an account. Data will be cleared when you close the browser.</p>
+      </div>
       
       <div className="auth-footer">
         <p>Don't have an account? <Link to="/register">Sign Up</Link></p>

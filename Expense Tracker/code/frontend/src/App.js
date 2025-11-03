@@ -20,6 +20,7 @@ import Expenses from './pages/Expenses';
 import Income from './pages/Income';
 import Budgets from './pages/Budgets';
 import Reports from './pages/Reports';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -75,6 +76,9 @@ function AppContent() {
             } />
             <Route path="/reports" element={
               isAuthenticated ? <Reports /> : <Navigate to="/login" />
+            } />
+            <Route path="/settings" element={
+              isAuthenticated ? <Settings /> : <Navigate to="/login" />
             } />
 
             {/* 404 Route */}

@@ -37,6 +37,11 @@ const Sidebar = () => {
           <i className="fas fa-user"></i>
           <span>Profile</span>
         </NavLink>
+
+        <NavLink to="/settings" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>
+          <i className="fas fa-cog"></i>
+          <span>Settings</span>
+        </NavLink>
       </nav>
     </aside>
   );

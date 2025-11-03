@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateProfile, changePassword, isDemoMode } = useAuth();
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -118,15 +118,14 @@ const Profile = () => {
     setIsSubmittingProfile(true);
 
     try {
-      // In a real app, this would call the updateProfile function from AuthContext
-      // For now, we'll just simulate a successful update
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      console.log('Profile updated:', profileForm);
+      await updateProfile(profileForm);
       setProfileSuccess(true);
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setProfileSuccess(false), 3000);
     } catch (error) {
       console.error('Error updating profile:', error);
-      setProfileErrors({ submit: 'Failed to update profile. Please try again.' });
+      setProfileErrors({ submit: error.message || 'Failed to update profile. Please try again.' });
     } finally {
       setIsSubmittingProfile(false);
     }
@@ -141,11 +140,11 @@ const Profile = () => {
     setIsSubmittingPassword(true);
 
     try {
-      // In a real app, this would call the changePassword function from AuthContext
-      // For now, we'll just simulate a successful password change
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      console.log('Password changed');
+      await changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+      
       setPasswordSuccess(true);
 
       // Reset password form
@@ -154,9 +153,12 @@ const Profile = () => {
         newPassword: '',
         confirmPassword: ''
       });
+
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setPasswordSuccess(false), 3000);
     } catch (error) {
       console.error('Error changing password:', error);
-      setPasswordErrors({ submit: 'Failed to change password. Please try again.' });
+      setPasswordErrors({ submit: error.message || 'Failed to change password. Please try again.' });
     } finally {
       setIsSubmittingPassword(false);
     }
