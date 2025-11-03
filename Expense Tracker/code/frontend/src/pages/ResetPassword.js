@@ -10,7 +10,8 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Implement password reset logic here
+      // Implement password reset logic here with token
+      console.log('Resetting password with token:', token);
       navigate('/login');
     } catch (error) {
       console.error('Password reset failed:', error);

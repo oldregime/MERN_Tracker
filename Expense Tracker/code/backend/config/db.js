@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.DATABASE_URL, {
+    const dbUrl = process.env.DATABASE_URL || 'mongodb+srv://mernexptrack:Asdf!1234@cluster0.i7llnad.mongodb.net/finance-tracker?retryWrites=true&w=majority';
+    
+    const conn = await mongoose.connect(dbUrl, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
