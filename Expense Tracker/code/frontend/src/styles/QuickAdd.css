@@ -1,0 +1,51 @@
+/* Quick Add Floating Action Button */
+.quick-add-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-add-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.quick-add-fab:active {
+  transform: scale(0.95);
+}
+
+.quick-add-modal {
+  max-width: 400px;
+}
+
+.quick-add-modal .form-group {
+  margin-bottom: 1rem;
+}
+
+.quick-add-modal .form-control {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .quick-add-fab {
+    bottom: 1rem;
+    right: 1rem;
+    width: 56px;
+    height: 56px;
+    font-size: 1.25rem;
+  }
+}

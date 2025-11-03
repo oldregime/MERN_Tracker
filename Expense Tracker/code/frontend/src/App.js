@@ -3,11 +3,13 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Layout Components
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Sidebar from './components/layout/Sidebar';
+import QuickAddButton from './components/QuickAddButton';
 
 // Page Components
 import Dashboard from './pages/Dashboard';
@@ -21,15 +23,18 @@ import Income from './pages/Income';
 import Budgets from './pages/Budgets';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Goals from './pages/Goals';
 import NotFound from './pages/NotFound';
 
 function App() {
   return (
-    <AuthProvider>
-      <SidebarProvider>
-        <AppContent />
-      </SidebarProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SidebarProvider>
+          <AppContent />
+        </SidebarProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
@@ -74,6 +79,9 @@ function AppContent() {
             <Route path="/budgets" element={
               isAuthenticated ? <Budgets /> : <Navigate to="/login" />
             } />
+            <Route path="/goals" element={
+              isAuthenticated ? <Goals /> : <Navigate to="/login" />
+            } />
             <Route path="/reports" element={
               isAuthenticated ? <Reports /> : <Navigate to="/login" />
             } />
@@ -88,6 +96,7 @@ function AppContent() {
       </div>
 
       {isAuthenticated && <Footer />}
+      {isAuthenticated && <QuickAddButton />}
     </div>
   );
 }

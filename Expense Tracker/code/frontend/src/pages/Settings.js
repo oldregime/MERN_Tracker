@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
   const { user, isDemoMode, logout } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
   
   const [settings, setSettings] = useState({
     emailNotifications: true,
     budgetAlerts: true,
     monthlyReports: false,
-    darkMode: false,
     compactView: false,
     showDecimals: true
   });
@@ -160,8 +161,8 @@ const Settings = () => {
             <label className="toggle-switch">
               <input
                 type="checkbox"
-                checked={settings.darkMode}
-                onChange={() => handleSettingChange('darkMode')}
+                checked={isDark}
+                onChange={toggleTheme}
               />
               <span className="toggle-slider"></span>
             </label>

@@ -28,6 +28,11 @@ const Sidebar = () => {
           <span>Budgets</span>
         </NavLink>
 
+        <NavLink to="/goals" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>
+          <i className="fas fa-bullseye"></i>
+          <span>Goals</span>
+        </NavLink>
+
         <NavLink to="/reports" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>
           <i className="fas fa-chart-pie"></i>
           <span>Reports</span>
