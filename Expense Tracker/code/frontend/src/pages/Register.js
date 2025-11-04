@@ -12,7 +12,7 @@ const Register = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, enterDemoMode } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -60,6 +60,11 @@ const Register = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDemoMode = () => {
+    enterDemoMode();
+    navigate('/');
   };
 
   return (
@@ -136,6 +141,20 @@ const Register = () => {
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
+
+        <div className="demo-mode-section">
+          <div className="divider">
+            <span>OR</span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-outline btn-block"
+            onClick={handleDemoMode}
+          >
+            <i className="fas fa-rocket"></i> Try Demo Mode
+          </button>
+          <p className="demo-note">Experience all features without creating an account. Data will be cleared when you close the browser.</p>
+        </div>
 
         <div className="auth-footer">
           <p>Already have an account? <Link to="/login">Sign In</Link></p>
