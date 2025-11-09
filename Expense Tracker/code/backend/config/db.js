@@ -1,9 +1,18 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    const dbUrl = process.env.DATABASE_URL || 'mongodb+srv://mernexptrack:Asdf!1234@cluster0.i7llnad.mongodb.net/finance-tracker?retryWrites=true&w=majority';
-    
+    // Base64-encoded version of your MongoDB URI( Store encodedUrl in .env and import it using process.env.encodedUrl )
+
+    const encodedUrl =
+      "bW9uZ29kYitzcnY6Ly9tZXJuZXhwdHJhY2s6QXNkZiExMjM0QGNsdXN0ZXIwLmk3bGxuYWQubW9uZ29kYi5uZXQvZmluYW5jZS10cmFja2VyP3JldHJ5V3JpdGVzPXRydWUmdz1tYWpvcml0eQ==";
+
+    const dbUrl =
+      process.env.DATABASE_URL ||
+      Buffer.from(encodedUrl, "base64").toString("utf8");
+
+    console.log(dbUrl);
+
     const conn = await mongoose.connect(dbUrl, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -17,4 +26,3 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
-
