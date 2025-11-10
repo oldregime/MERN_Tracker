@@ -6,10 +6,18 @@ const connectDB = require('../backend/config/db');
 // Load environment variables
 dotenv.config();
 
-// Set default environment variables if not provided
-process.env.JWT_SECRET = process.env.JWT_SECRET || '5cfea10cc02da694101ed82190c5c01a8272ef26b1e758bf114f9dc2253fdbd2';
+// Validate required environment variables
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+  console.error('Please set these variables in your Vercel environment settings.');
+  process.exit(1);
+}
+
+// Set default optional environment variables
 process.env.JWT_ACCESS_EXPIRATION = process.env.JWT_ACCESS_EXPIRATION || '1h';
-process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your_refresh_token_secret_change_this_in_production';
 process.env.JWT_REFRESH_EXPIRATION = process.env.JWT_REFRESH_EXPIRATION || '7d';
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 

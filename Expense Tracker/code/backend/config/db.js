@@ -2,7 +2,11 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const dbUrl = process.env.DATABASE_URL || 'mongodb+srv://mernexptrack:Asdf!1234@cluster0.i7llnad.mongodb.net/finance-tracker?retryWrites=true&w=majority';
+    const dbUrl = process.env.DATABASE_URL;
+    
+    if (!dbUrl) {
+      throw new Error('DATABASE_URL environment variable is not defined. Please set it in your .env file.');
+    }
     
     const conn = await mongoose.connect(dbUrl, {
       useNewUrlParser: true,

@@ -64,31 +64,52 @@ Visit: http://localhost:3000
 ## 📚 Important Files
 
 - **DEPLOYMENT_GUIDE.md** - Comprehensive deployment instructions
+- **SECURITY_CHECKLIST.md** - Security setup guide
 - **deploy-to-vercel.sh** - Automated deployment script
 - **start-local.sh** - Local testing script
 - **vercel.json** - Vercel configuration
 - **api/index.js** - Serverless API entry point
 - **backend/.env** - Backend environment variables (DO NOT COMMIT)
 
-## 🔐 MongoDB Atlas Credentials
+## 🔐 Environment Variables Setup
 
-Your MongoDB connection is already configured:
-- **Database**: finance-tracker
-- **Connection String**: Configured in backend/.env
-- **Access**: IP whitelist set to allow all (0.0.0.0/0)
+⚠️ **SECURITY NOTICE**: Never share or commit your actual credentials!
 
-## ⚡ Environment Variables for Vercel
+For deployment, you'll need to configure these environment variables in Vercel:
 
-Add these in Vercel Dashboard → Settings → Environment Variables:
+1. **DATABASE_URL** - Your MongoDB Atlas connection string
+2. **JWT_SECRET** - Randomly generated secret (64+ characters)
+3. **JWT_REFRESH_SECRET** - Different randomly generated secret
+4. **NODE_ENV** - Set to `production`
+5. **JWT_ACCESS_EXPIRATION** - Token expiration time (e.g., `1h`)
+6. **JWT_REFRESH_EXPIRATION** - Refresh token expiration (e.g., `7d`)
 
+### Generate Secure Secrets
+
+Run these commands to generate secure secrets:
+
+```bash
+# Generate JWT_SECRET
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Generate JWT_REFRESH_SECRET (run again for different value)
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
-DATABASE_URL=mongodb+srv://mernexptrack:Asdf!1234@cluster0.i7llnad.mongodb.net/finance-tracker?retryWrites=true&w=majority
-NODE_ENV=production
-JWT_SECRET=5cfea10cc02da694101ed82190c5c01a8272ef26b1e758bf114f9dc2253fdbd2
-JWT_ACCESS_EXPIRATION=1h
-JWT_REFRESH_SECRET=your_refresh_token_secret_change_this_in_production
-JWT_REFRESH_EXPIRATION=7d
+
+### Where to Add Variables
+
+**Vercel Dashboard Method:**
+1. Go to https://vercel.com/dashboard
+2. Select your project
+3. Go to Settings → Environment Variables
+4. Add each variable for Production, Preview, and Development
+
+**Vercel CLI Method:**
+```bash
+vercel env add VARIABLE_NAME
 ```
+
+See **DEPLOYMENT_GUIDE.md** for detailed step-by-step instructions.
 
 ## 🎉 After Deployment
 
@@ -103,6 +124,7 @@ JWT_REFRESH_EXPIRATION=7d
 ## 🆘 Need Help?
 
 - Check **DEPLOYMENT_GUIDE.md** for detailed instructions
+- Review **SECURITY_CHECKLIST.md** for security best practices
 - View Vercel logs: `npx vercel logs`
 - Check MongoDB Atlas dashboard: https://cloud.mongodb.com
 
@@ -110,24 +132,44 @@ JWT_REFRESH_EXPIRATION=7d
 
 **Issue**: Deployment fails
 - Check build logs in Vercel dashboard
-- Ensure all environment variables are set
+- Ensure all environment variables are set correctly
+- Verify MongoDB connection string format
 
 **Issue**: Can't connect to database
 - Verify MongoDB Atlas IP whitelist includes 0.0.0.0/0
-- Check connection string is correct
+- Check connection string format and credentials
+- Ensure database user has proper permissions
 
 **Issue**: API not working
 - Ensure environment variables are added in Vercel
 - Check API routes use `/api` prefix
+- Review Vercel function logs
+
+**Issue**: Authentication fails
+- Verify JWT secrets are properly set
+- Check token expiration times
+- Ensure secrets are different for access and refresh tokens
 
 ---
 
 ## 🚀 Ready to Deploy?
 
-Run this command:
+1. **Review DEPLOYMENT_GUIDE.md** for full instructions
+2. **Generate new secrets** using the commands above
+3. **Run deployment script** or follow manual steps
 
 ```bash
 ./deploy-to-vercel.sh
 ```
 
 Good luck! 🎉
+
+---
+
+## 🔒 Security Reminder
+
+- ✅ Never commit `.env` files
+- ✅ Use strong, randomly generated secrets
+- ✅ Rotate credentials regularly
+- ✅ Enable 2FA on all accounts
+- ✅ Keep dependencies updated

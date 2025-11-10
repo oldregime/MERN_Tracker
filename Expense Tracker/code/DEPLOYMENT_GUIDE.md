@@ -27,7 +27,7 @@ Follow the prompts to authenticate with your Vercel account (GitHub, GitLab, Bit
 From the project root directory:
 
 ```bash
-cd "/run/media/divyansh/New Volume/PARA/Projects/MERN_Tracker/Expense Tracker/code"
+cd "d:\Documents\02_Projects\01_MERN_Projects\MERN_Tracker\Expense Tracker\code"
 vercel
 ```
 
@@ -43,43 +43,75 @@ When prompted:
 
 After the initial deployment, you need to add environment variables:
 
+#### 3.1 Database Connection String
+
 ```bash
 vercel env add DATABASE_URL
 ```
 
-When prompted, paste:
-```
-mongodb+srv://mernexptrack:Asdf!1234@cluster0.i7llnad.mongodb.net/finance-tracker?retryWrites=true&w=majority
-```
+**Value**: Use your MongoDB Atlas connection string from your `.env` file
+**Format**: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority`
+
+⚠️ **IMPORTANT**: Replace `<username>`, `<password>`, `<cluster>`, and `<database>` with your actual credentials
 
 Select: **Production, Preview, and Development**
 
-Add more environment variables:
+#### 3.2 JWT Secret
 
 ```bash
 vercel env add JWT_SECRET
 ```
-Value: `5cfea10cc02da694101ed82190c5c01a8272ef26b1e758bf114f9dc2253fdbd2`
+
+**Generate a secure secret** by running this command first:
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+Copy the output and paste it as the value.
+
+Select: **Production, Preview, and Development**
+
+#### 3.3 Node Environment
 
 ```bash
 vercel env add NODE_ENV
 ```
 Value: `production`
 
+Select: **Production, Preview, and Development**
+
+#### 3.4 JWT Access Expiration
+
 ```bash
 vercel env add JWT_ACCESS_EXPIRATION
 ```
 Value: `1h`
 
+Select: **Production, Preview, and Development**
+
+#### 3.5 JWT Refresh Secret
+
 ```bash
 vercel env add JWT_REFRESH_SECRET
 ```
-Value: `your_refresh_token_secret_change_this_in_production`
+
+**Generate another secure secret** (different from JWT_SECRET):
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+Copy the output and paste it as the value.
+
+Select: **Production, Preview, and Development**
+
+#### 3.6 JWT Refresh Expiration
 
 ```bash
 vercel env add JWT_REFRESH_EXPIRATION
 ```
 Value: `7d`
+
+Select: **Production, Preview, and Development**
 
 ### Step 4: Redeploy with Environment Variables
 
@@ -130,7 +162,7 @@ Or visit the Vercel dashboard: https://vercel.com/dashboard
 3. **Test locally first**:
    ```bash
    # Terminal 1 - Backend
-   cd backend && npm start
+   cd backend && node server.js
    
    # Terminal 2 - Frontend
    cd frontend && npm start
@@ -147,12 +179,27 @@ Or visit the Vercel dashboard: https://vercel.com/dashboard
 **Issue**: Build fails
 **Solution**: Run `npm run build` in frontend directory locally to check for errors
 
-## 🔒 Security Notes
+## 🔒 Security Best Practices
 
-1. **Never commit .env files** - They are gitignored
-2. **Rotate secrets regularly** - Especially JWT_SECRET
-3. **Use strong passwords** - For MongoDB Atlas
-4. **Enable 2FA** - On Vercel account
+1. ✅ **Never commit .env files** - They are gitignored
+2. ✅ **Use strong, randomly generated secrets** - Minimum 64 characters
+3. ✅ **Rotate credentials regularly** - Every 90 days
+4. ✅ **Use different secrets** - JWT_SECRET ≠ JWT_REFRESH_SECRET
+5. ✅ **Enable 2FA** - On all accounts (Vercel, MongoDB Atlas, GitHub)
+6. ✅ **Limit IP access** - In MongoDB Atlas when possible
+7. ✅ **Monitor access logs** - Regularly check for suspicious activity
+8. ✅ **Keep dependencies updated** - Run `npm audit` regularly
+
+## 🔐 Security Checklist Before Going Live
+
+- [ ] All secrets are randomly generated (not default values)
+- [ ] Environment variables are set in Vercel (not in code)
+- [ ] MongoDB Atlas password is strong and unique
+- [ ] .env files are not committed to Git
+- [ ] 2FA enabled on all accounts
+- [ ] Latest security patches applied (`npm audit fix`)
+- [ ] CORS properly configured
+- [ ] Rate limiting implemented for API endpoints
 
 ## 📊 MongoDB Atlas Dashboard
 
@@ -164,6 +211,15 @@ Access your database:
 
 ## 🎉 Success!
 
-Your MERN expense tracker is now live and accessible to everyone!
+Your MERN expense tracker is now live and accessible!
 
 Share your URL: `https://your-project-name.vercel.app`
+
+---
+
+## 📚 Additional Resources
+
+- **SECURITY_CHECKLIST.md** - Complete security setup and audit guide
+- **MongoDB Atlas Security**: https://docs.atlas.mongodb.com/security/
+- **Vercel Security**: https://vercel.com/docs/security
+- **OWASP Top 10**: https://owasp.org/www-project-top-ten/
