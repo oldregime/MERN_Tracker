@@ -254,11 +254,23 @@ const Expenses = () => {
     }
 
     try {
-      // Add expense via API
-      const addedExpense = await createExpense({
-        ...newExpense,
-        amount: parseFloat(newExpense.amount)
-      });
+      let addedExpense;
+      
+      if (localStorage.getItem('demoMode') === 'true') {
+        // Mock API call for Demo Mode
+        addedExpense = {
+          ...newExpense,
+          _id: 'demo-' + Date.now(),
+          amount: parseFloat(newExpense.amount),
+          createdAt: new Date().toISOString()
+        };
+      } else {
+        // Add expense via API
+        addedExpense = await createExpense({
+          ...newExpense,
+          amount: parseFloat(newExpense.amount)
+        });
+      }
 
       // Update state
       setExpenses([...expenses, addedExpense]);
@@ -274,8 +286,8 @@ const Expenses = () => {
       setShowModal(false);
     } catch (error) {
       console.error('Error adding expense:', error);
+      alert('Failed to add expense. Please try again.');
     }
-  }
 
   // Handle deleting an expense
   async function handleDeleteExpense(id) {

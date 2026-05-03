@@ -19,7 +19,6 @@ const ExpenseSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: [
       'Housing', 'Transportation', 'Food', 'Utilities', 
       'Insurance', 'Healthcare', 'Debt', 'Personal', 
       'Entertainment', 'Education', 'Clothing', 'Gifts',
@@ -33,7 +32,6 @@ const ExpenseSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['Cash', 'Credit Card', 'Debit Card', 'Bank Transfer', 'Mobile Payment', 'Other'],
     default: 'Cash'
   },
   location: {
@@ -49,7 +47,6 @@ const ExpenseSchema = new mongoose.Schema({
   },
   recurringFrequency: {
     type: String,
-    enum: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Quarterly', 'Yearly', null],
     default: null
   },
   tags: [{

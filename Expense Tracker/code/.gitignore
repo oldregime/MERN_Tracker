@@ -46,3 +46,4 @@ Thumbs.db
 # Sensitive deployment files
 vercel-env-variables.txt
 setup-env.sh
+.env*.local

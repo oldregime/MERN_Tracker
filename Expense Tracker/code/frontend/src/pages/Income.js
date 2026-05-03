@@ -254,11 +254,23 @@ const Income = () => {
     }
 
     try {
-      // Add income via API
-      const addedIncome = await createIncome({
-        ...newIncome,
-        amount: parseFloat(newIncome.amount)
-      });
+      let addedIncome;
+      
+      if (localStorage.getItem('demoMode') === 'true') {
+        // Mock API call for Demo Mode
+        addedIncome = {
+          ...newIncome,
+          _id: 'demo-' + Date.now(),
+          amount: parseFloat(newIncome.amount),
+          createdAt: new Date().toISOString()
+        };
+      } else {
+        // Add income via API
+        addedIncome = await createIncome({
+          ...newIncome,
+          amount: parseFloat(newIncome.amount)
+        });
+      }
 
       // Update state
       setIncomes([...incomes, addedIncome]);
@@ -274,6 +286,7 @@ const Income = () => {
       setShowModal(false);
     } catch (error) {
       console.error('Error adding income:', error);
+      alert('Failed to add income. Please try again.');
     }
   }
 
