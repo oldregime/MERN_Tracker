@@ -19,6 +19,7 @@ const IncomeSchema = new mongoose.Schema({
   source: {
     type: String,
     required: [true, 'Source is required'],
+    enum: [
       'Salary', 'Freelance', 'Business', 'Investments', 
       'Dividends', 'Rental', 'Interest', 'Gifts', 
       'Refunds', 'Sale', 'Other'
