@@ -288,6 +288,7 @@ const Expenses = () => {
       console.error('Error adding expense:', error);
       alert('Failed to add expense. Please try again.');
     }
+  }
 
   // Handle deleting an expense
   async function handleDeleteExpense(id) {
