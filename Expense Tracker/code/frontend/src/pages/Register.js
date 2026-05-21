@@ -34,26 +34,12 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        })
+      // AuthContext's register function already handles the API call, saves the token, and updates state
+      await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      // Auto-login after successful registration
-      await register(formData);
       navigate('/');
     } catch (error) {
       setError(error.message || 'Failed to create account');

@@ -50,6 +50,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
+      setErrors({ global: error.message || 'Invalid credentials' });
     } finally {
       setIsSubmitting(false);
     }
@@ -66,6 +67,8 @@ const Login = () => {
         <h2>Welcome Back</h2>
         <p>Sign in to your account to continue</p>
       </div>
+      
+      {errors.global && <div className="alert alert-danger">{errors.global}</div>}
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
