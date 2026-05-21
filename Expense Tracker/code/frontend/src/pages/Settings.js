@@ -4,8 +4,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
-  const { user, isDemoMode, logout } = useAuth();
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { user, isDemoMode } = useAuth();
+  const { toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
   
   const [settings, setSettings] = useState({

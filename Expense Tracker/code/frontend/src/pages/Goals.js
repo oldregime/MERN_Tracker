@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import '../styles/Goals.css';
 
 const Goals = () => {
-  const { user } = useAuth();
   const [goals, setGoals] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newGoal, setNewGoal] = useState({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 const Profile = () => {
-  const { user, updateProfile, changePassword, isDemoMode } = useAuth();
+  const { user, updateProfile, changePassword } = useAuth();
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
